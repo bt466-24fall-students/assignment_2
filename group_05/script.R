@@ -96,6 +96,31 @@ write.csv(salary_df, "./raw_data/salary_cleaned.csv")
 #Created a column of % increase of salary from the level below to see how salaries change when moving up the level scale.
 #Included functions to identify and remove rows with NaN values, however, this df did not have any NaN values.
 
+#Summarize mean, median, and standard deviation for numeric columns
+numeric_summary <- salary_df %>%
+  summarize(
+    mean_salary = mean(salary, na.rm = TRUE),
+    median_salary = median(salary, na.rm = TRUE),
+    sd_salary = sd(salary, na.rm = TRUE),
+    mean_level = mean(level, na.rm = TRUE),
+    median_level = median(level, na.rm = TRUE),
+    sd_level = sd(level, na.rm = TRUE)
+  )
+print("Numeric Summary:")
+print(numeric_summary)
+
+# Compute frequency counts for categorical variables by position
+categorical_summary <- salary_df %>%
+  group_by(position) %>%
+  summarize(count = n(), .groups = "drop")
+
+print("Categorical Summary:")
+print(categorical_summary)
+
+# Data summarization identify trends
+print("The trend between level/position and salary is positive.
+      The increase in salary is fairly linear, but there is an extreme outlier for a CEO's salary.")
+
 #Plots
 #Number 1:Univariate - Bar plot
 #Creates line breaks for positions with two words
