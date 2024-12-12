@@ -1,7 +1,7 @@
 #A1
 # Path to Git Bash on your computer
 #!!Use git_bash_path <- "C:/Program Files/Git/git-bash.exe" instead if you're on Windows!!
-git_bash_path <- "/bin/bash"
+git_bash_path <- "C:/Program Files/Git/git-bash.exe"
 # Define the Kaggle dataset URL and file paths
 kaggle_url <- "https://www.kaggle.com/api/v1/datasets/download/taseermehboob9/salary-dataset-of-business-levels"
 output_dir <- "./raw_data"
@@ -96,5 +96,36 @@ write.csv(salary_df, "./raw_data/salary_cleaned.csv")
 #Created a column of % increase of salary from the level below to see how salaries change when moving up the level scale.
 #Included functions to identify and remove rows with NaN values, however, this df did not have any NaN values.
 
+#Plots
+#Number 1:Univariate - Bar plot
+#Creates line breaks for positions with two words
+salary_df$position <- gsub(" ", "\n", salary_df$position)
 
+barplot(salary_df$salary,
+     names.arg = salary_df$position,
+     main = "Salary by Position",
+     xlab = "Position",
+     ylab = "Salary",
+     col = "lightblue",
+     border = "black",
+     las = 1,            # Keeps y numbers horizontal
+     cex.names = 0.55,   # Adjust text size for x-axis labels
+     cex.axis = 0.6,     # Adjust axis number text size
+     space = 1
+     )
+#Prevent scientific notation for y-axis (Salary)
+options(scipen = 999)
+
+#Number 2: Bivariate - Scatter plot
+plot(salary_df$level, salary_df$salary,
+     main = "Salary vs Level",
+     xlab = "Level",
+     ylab = "Salary",
+     pch = 19,
+     col = "pink",
+     las = 1,
+     cex = 1.5,     
+     cex.axis = 0.75,     
+     cex.lab = 1.2,
+        )
 
