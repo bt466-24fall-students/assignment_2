@@ -1,8 +1,30 @@
 # Group 3
 # Matthew Bodziony, Daniel Choi, Cole Groeneveld
 
-# Path to Git Bash on your computer
-git_bash_path <- "C:/Program Files/Git/git-bash.exe"
+# Load necessary package
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(skimr)
+
+if (Sys.info()["sysname"] == "Windows") {
+  # For Windows, default Git Bash path (adjust if needed)
+  git_bash_path <- "C:/Program Files/Git/git-bash.exe"
+  if (!file.exists(git_bash_path)) {
+    git_bash_path <- "C:/Program Files (x86)/Git/git-bash.exe"
+  }
+} else if (Sys.info()["sysname"] == "Darwin") {
+  # For macOS, default bash path (Git is usually pre-installed)
+  git_bash_path <- "/bin/bash"
+} else {
+  # For Linux or unknown OS, use default bash
+  git_bash_path <- "/bin/bash"
+}
+
+# Create raw_data folder
+if (!dir.exists("./group_3/raw_data")) {
+  dir.create("./group_3/raw_data")
+}
 
 # Write your bash commands and run them  
 curl_command <- "curl -L -o ./raw_data/archive.zip https://www.kaggle.com/api/v1/datasets/download/tylermorse/retail-business-sales-20172019"
@@ -11,24 +33,20 @@ system(paste(shQuote(git_bash_path),
              shQuote(curl_command)), 
        intern = TRUE)
 
-unzip_command <- "unzip -o ./raw_data/archive.zip -d ./business_sales"
+unzip_command <- "unzip -o ./raw_data/archive.zip -d ./raw_data/business_sales"
 system(paste(shQuote(git_bash_path), 
              "-c", 
              shQuote(unzip_command)), 
        intern = TRUE)
 
-# Load necessary package
-library(readr)
+
 
 # Load the dataset
-data_frame_name <- read_csv("business_sales/business.retailsales.csv")
+data_frame_name <- read_csv("raw_data/business_sales/business.retailsales.csv")
 
 # Confirm data is loaded
 print(head(data_frame_name))
 
-# Load additional libraries
-library(dplyr)
-library(skimr)
 
 # Initial inspection of the dataset
 glimpse(data_frame_name)
@@ -66,7 +84,7 @@ cleaned_data <- data_frame_name %>%
   filter(complete.cases(.))
 
 # Save the cleaned data
-write_csv(cleaned_data, "business_sales/cleaned_business_sales.csv")
+write_csv(cleaned_data, "raw_data/business_sales/cleaned_business_sales.csv")
 
 # Summary statistics
 summary_stats <- cleaned_data %>%
@@ -96,8 +114,6 @@ product_summary <- cleaned_data %>%
 # - "Basket" has the highest Total Sales of 134791.39
 # - "Art & Sculpture" has the highest Average Sales of 250.68501
 
-#library ggplot
-library(ggplot2)
 
 #Density Plot of distribution of Total Net Sales
 ggplot(cleaned_data, aes(x = `Total Net Sales`)) +
