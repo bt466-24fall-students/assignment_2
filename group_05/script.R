@@ -1,5 +1,6 @@
 #A1
 # Path to Git Bash on your computer
+#!!Use git_bash_path <- "C:/Program Files/Git/git-bash.exe" instead if you're on Windows!!
 git_bash_path <- "/bin/bash"
 # Define the Kaggle dataset URL and file paths
 kaggle_url <- "https://www.kaggle.com/api/v1/datasets/download/taseermehboob9/salary-dataset-of-business-levels"
