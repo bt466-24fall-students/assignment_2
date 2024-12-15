@@ -154,3 +154,61 @@ plot(salary_df$level, salary_df$salary,
      cex.lab = 1.2,
         )
 
+#Advanced Data Wrangling:
+#Use dplyr functions to derive insights from grouped or filtered subsets of data.
+
+# Create Salary Groups with Ordered Levels
+salary_df <- salary_df %>%
+  mutate(
+    salary_group = case_when(
+      salary < 50000 ~ "Low",
+      salary >= 50000 & salary < 100000 ~ "Medium",
+      salary >= 100000 ~ "High"
+    ),
+    salary_group = factor(salary_group, levels = c("High", "Medium", "Low"))
+  )
+
+# Group by Salary Group and Derive Insights
+grouped_summary <- salary_df %>%
+  group_by(salary_group) %>%
+  summarize(
+    avg_salary = mean(salary, na.rm = TRUE),
+    min_salary = min(salary, na.rm = TRUE),
+    max_salary = max(salary, na.rm = TRUE),
+    avg_level = mean(level, na.rm = TRUE),
+    count = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(salary_group)  # Ensure the rows are ordered as per salary_group levels
+
+print("Grouped Summary by Salary Group:")
+print(grouped_summary)
+
+# Additional Insights: Salary Increase Percentage by Group
+salary_increase_summary <- salary_df %>%
+  group_by(salary_group) %>%
+  summarize(
+    avg_salary_increase = mean(salary_increase_percent, na.rm = TRUE),
+    max_salary_increase = max(salary_increase_percent, na.rm = TRUE),
+    min_salary_increase = min(salary_increase_percent, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(salary_group)  # Ensure the rows are ordered as per salary_group levels
+
+print("Salary Increase Insights by Salary Group:")
+print(salary_increase_summary)
+
+# Optional: Bar Plot for Average Salary by Group
+library(ggplot2)
+
+ggplot(grouped_summary, aes(x = salary_group, y = avg_salary, fill = salary_group)) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(
+    title = "Average Salary by Salary Group",
+    x = "Salary Group",
+    y = "Average Salary"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("High" = "darkblue", "Medium" = "blue", "Low" = "lightblue"))
+
+
