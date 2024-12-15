@@ -1,10 +1,12 @@
-#Loads the readr library and tibbl
+#Loads the readr library tibble dplyr
 library(readr)
 library(tibble)
-
+library(dplyr)
+library(ggplot2)
+library(e1071)
 
 # setting download path as the raw data folder
-download_path <- "group_01/raw_data/sales_data_new.csv"
+download_path <- "group_01/raw_data/sales_data.csv"
 
 # storing dataset url in variable
 dataset_link <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgpIxJreICLSslDONRupncn6mgOC7EoQXprYjsD1Pk5-lE4t7xNFQG2Y14o5iaaWiF1WlrSmVRmaTV/pub?output=csv"
@@ -36,19 +38,131 @@ rm(download_path, dataset_link)
 
 
 # Glimpse to view the structure
-glimpse(Sales_data)
+#glimpse(Sales_data)
 
 #view the first few rows of the dataset
-head(Sales_data)
+#head(Sales_data)
 
 #view last few rows
-tail(Sales_data)
+#tail(Sales_data)
 
 #Check for missingness
-skim_output <- skimr::skim(Sales_data)
-print(skim_output)
+#skim_output <- skimr::skim(Sales_data)
+#print(skim_output)
 
 # 2,823 rows and 25 columns, double and character data types 
 # 16 character variables and 9 double variables
-# Missing data in addressline2, state, territory
+# Missing data in few columns
+
+
+# most relevant columns selected
+Sales_data_cleaned <- Sales_data %>% 
+  select(ORDERDATE, SALES, QUANTITYORDERED, COUNTRY, PRODUCTLINE,
+         PRICEEACH, ADDRESSLINE1, CITY, STATE, CUSTOMERNAME, POSTALCODE, PHONE)
+
+
+
+
+#Create new column Total_Revenue that is qordered * priceeach
+Sales_data_cleaned <- Sales_data_cleaned %>%
+  mutate(TOTAL_REVENUE = QUANTITYORDERED * PRICEEACH)
+
+
+# Count the total number of blank or missing entries across the entire dataset
+total_blank_count <- Sales_data_cleaned %>%
+  summarise(across(everything(), ~sum(is.na(.) | . == ""))) %>%
+  summarise(total_blanks = sum(.))
+
+# Print the result with the message
+cat("Total no. of N/A entries before removing is:", total_blank_count$total_blanks, "\n")
+
+# Remove rows that contain any blank or NA entries
+Sales_data_cleaned <- Sales_data_cleaned %>%
+  filter_all(all_vars(. != "" & !is.na(.)))
+
+
+
+
+#We've selected only ORDERDATE, SALES, QUANTITYORDERED, COUNTRY, PRODUCTLINE,
+#PRICEEACH, ADDRESSLINE1, CITY, STATE, CUSTOMERNAME, POSTALCODE. All other variables were either
+#redundant such as address2 or weren't necessary such as Month and year id.
+#We then counted no. of blank entries using dplyr functions, then printed it 
+#and then removed rows with blank entries
+
+
+# Summary statistics for numeric columns
+numeric_summary <- Sales_data_cleaned %>%
+  summarise(
+    mean_sales = mean(SALES, na.rm = TRUE),
+    median_sales = median(SALES, na.rm = TRUE),
+    sd_sales = sd(SALES, na.rm = TRUE),
+    mean_quantity = mean(QUANTITYORDERED, na.rm = TRUE),
+    median_quantity = median(QUANTITYORDERED, na.rm = TRUE),
+    sd_quantity = sd(QUANTITYORDERED, na.rm = TRUE)
+  )
+
+# Print the summary statistics
+print(numeric_summary)
+
+
+
+# Frequency count for categorical variables (e.g., COUNTRY, PRODUCTLINE)
+categorical_summary <- Sales_data_cleaned %>%
+  group_by(COUNTRY) %>%
+  summarise(country_count = n())
+
+# Print frequency counts
+print(categorical_summary)
+
+
+#Detect and print skewness (detect outliars)
+sales_skewness <- skewness(Sales_data_cleaned$SALES, na.rm = TRUE)
+quantity_skewness <- skewness(Sales_data_cleaned$QUANTITYORDERED, na.rm = TRUE)
+
+cat("Skewness for SALES:", sales_skewness, "\n")
+cat("Skewness for QUANTITYORDERED:", quantity_skewness, "\n")
+
+
+# Visualizations using ggplot2
+
+
+# Histogram for Sales
+print(ggplot(Sales_data_cleaned, aes(x = SALES)) +
+        geom_histogram(binwidth = 1000, fill = "blue", color = "black", alpha = 0.7) +
+        labs(title = "Distribution of Sales", x = "Sales", y = "Frequency"))
+
+# Density Plot for Quantity Ordered
+print(ggplot(Sales_data_cleaned, aes(x = QUANTITYORDERED)) +
+        geom_density(fill = "green", alpha = 0.5) +
+        labs(title = "Density Plot of Quantity Ordered", x = "Quantity Ordered", y = "Density"))
+
+# Bar Plot for Product Line
+print(ggplot(Sales_data_cleaned, aes(x = PRODUCTLINE)) +
+        geom_bar(fill = "red", color = "black", alpha = 0.7) +
+        labs(title = "Frequency of Product Line", x = "Product Line", y = "Count"))
+
+# Bar Plot for Country
+print(ggplot(Sales_data_cleaned, aes(x = COUNTRY)) +
+        geom_bar(fill = "purple", color = "black", alpha = 0.7) +
+        labs(title = "Frequency of Countries", x = "Country", y = "Count"))
+
+# Scatter Plot for Sales vs Quantity Ordered
+print(ggplot(Sales_data_cleaned, aes(x = QUANTITYORDERED, y = SALES)) +
+        geom_point(alpha = 0.5, color = "darkblue") +
+        labs(title = "Sales vs Quantity Ordered", x = "Quantity Ordered", y = "Sales"))
+
+# Box Plot for Sales across Different Product Lines
+print(ggplot(Sales_data_cleaned, aes(x = PRODUCTLINE, y = SALES)) +
+        geom_boxplot(fill = "yellow", color = "black", alpha = 0.7) +
+        labs(title = "Sales Distribution by Product Line", x = "Product Line", y = "Sales"))
+
+# Histogram for Price Each
+print(ggplot(Sales_data_cleaned, aes(x = PRICEEACH)) +
+        geom_histogram(binwidth = 50, fill = "orange", color = "black", alpha = 0.7) +
+        labs(title = "Distribution of Price Each", x = "Price Each", y = "Frequency"))
+
+# Box Plot for Quantity Ordered across Different Product Lines
+print(ggplot(Sales_data_cleaned, aes(x = PRODUCTLINE, y = QUANTITYORDERED)) +
+        geom_boxplot(fill = "lightblue", color = "black", alpha = 0.7) +
+        labs(title = "Quantity Ordered Distribution by Product Line", x = "Product Line", y = "Quantity Ordered"))
 
