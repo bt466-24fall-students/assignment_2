@@ -4,6 +4,7 @@ library(tibble)
 library(dplyr)
 library(ggplot2)
 library(e1071)
+library(skimr)
 
 # setting download path as the raw data folder
 download_path <- "group_01/raw_data/sales_data.csv"
@@ -126,43 +127,74 @@ cat("Skewness for QUANTITYORDERED:", quantity_skewness, "\n")
 # Visualizations using ggplot2
 
 
-# Histogram for Sales
+# Faceted Histogram for Sales by Product Line
 print(ggplot(Sales_data_cleaned, aes(x = SALES)) +
         geom_histogram(binwidth = 1000, fill = "blue", color = "black", alpha = 0.7) +
-        labs(title = "Distribution of Sales", x = "Sales", y = "Frequency"))
+        facet_wrap(~ PRODUCTLINE, scales = "free_y") +
+        labs(title = "Distribution of Sales by Product Line", x = "Sales", y = "Frequency"))
 
-# Density Plot for Quantity Ordered
+# Faceted Density Plot for Quantity Ordered by Product Line
 print(ggplot(Sales_data_cleaned, aes(x = QUANTITYORDERED)) +
         geom_density(fill = "green", alpha = 0.5) +
-        labs(title = "Density Plot of Quantity Ordered", x = "Quantity Ordered", y = "Density"))
+        facet_wrap(~ PRODUCTLINE, scales = "free_y") +
+        labs(title = "Density Plot of Quantity Ordered by Product Line", x = "Quantity Ordered", y = "Density"))
 
-# Bar Plot for Product Line
+# Faceted Bar Plot for Product Line by Country
 print(ggplot(Sales_data_cleaned, aes(x = PRODUCTLINE)) +
         geom_bar(fill = "red", color = "black", alpha = 0.7) +
-        labs(title = "Frequency of Product Line", x = "Product Line", y = "Count"))
+        facet_wrap(~ COUNTRY, scales = "free_y") +
+        labs(title = "Frequency of Product Line by Country", x = "Product Line", y = "Count"))
 
-# Bar Plot for Country
+# Faceted Bar Plot for Country by Product Line
 print(ggplot(Sales_data_cleaned, aes(x = COUNTRY)) +
         geom_bar(fill = "purple", color = "black", alpha = 0.7) +
-        labs(title = "Frequency of Countries", x = "Country", y = "Count"))
+        facet_wrap(~ PRODUCTLINE, scales = "free_y") +
+        labs(title = "Frequency of Countries by Product Line", x = "Country", y = "Count"))
 
-# Scatter Plot for Sales vs Quantity Ordered
+# Faceted Scatter Plot for Sales vs Quantity Ordered by Country
 print(ggplot(Sales_data_cleaned, aes(x = QUANTITYORDERED, y = SALES)) +
         geom_point(alpha = 0.5, color = "darkblue") +
-        labs(title = "Sales vs Quantity Ordered", x = "Quantity Ordered", y = "Sales"))
+        facet_wrap(~ COUNTRY, scales = "free") +
+        labs(title = "Sales vs Quantity Ordered by Country", x = "Quantity Ordered", y = "Sales"))
 
-# Box Plot for Sales across Different Product Lines
+# Faceted Box Plot for Sales across Different Product Lines and Countries
 print(ggplot(Sales_data_cleaned, aes(x = PRODUCTLINE, y = SALES)) +
         geom_boxplot(fill = "yellow", color = "black", alpha = 0.7) +
-        labs(title = "Sales Distribution by Product Line", x = "Product Line", y = "Sales"))
+        facet_wrap(~ COUNTRY, scales = "free_y") +
+        labs(title = "Sales Distribution by Product Line and Country", x = "Product Line", y = "Sales"))
 
-# Histogram for Price Each
+# Faceted Histogram for Price Each by Product Line
 print(ggplot(Sales_data_cleaned, aes(x = PRICEEACH)) +
         geom_histogram(binwidth = 50, fill = "orange", color = "black", alpha = 0.7) +
-        labs(title = "Distribution of Price Each", x = "Price Each", y = "Frequency"))
+        facet_wrap(~ PRODUCTLINE, scales = "free_y") +
+        labs(title = "Distribution of Price Each by Product Line", x = "Price Each", y = "Frequency"))
 
-# Box Plot for Quantity Ordered across Different Product Lines
+# Faceted Box Plot for Quantity Ordered across Different Product Lines and Countries
 print(ggplot(Sales_data_cleaned, aes(x = PRODUCTLINE, y = QUANTITYORDERED)) +
         geom_boxplot(fill = "lightblue", color = "black", alpha = 0.7) +
-        labs(title = "Quantity Ordered Distribution by Product Line", x = "Product Line", y = "Quantity Ordered"))
+        facet_wrap(~ COUNTRY, scales = "free_y") +
+        labs(title = "Quantity Ordered Distribution by Product Line and Country", x = "Product Line", y = "Quantity Ordered"))
+
+
+
+
+#Advanced data wrangling with dplyr, insights from grouped data
+# Total Revenue by Country
+revenue_by_country <- Sales_data_cleaned %>%
+  group_by(COUNTRY) %>%
+  summarise(total_revenue = sum(TOTAL_REVENUE, na.rm = TRUE)) %>%
+  arrange(desc(total_revenue))
+
+print(revenue_by_country)
+
+
+# Total Revenue by Product Line
+revenue_by_productline <- Sales_data_cleaned %>%
+  group_by(PRODUCTLINE) %>%
+  summarise(total_revenue = sum(TOTAL_REVENUE, na.rm = TRUE)) %>%
+  arrange(desc(total_revenue))
+
+print(revenue_by_productline)
+
+
 
