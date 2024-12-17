@@ -5,9 +5,16 @@ library(dplyr)
 library(ggplot2)
 library(e1071)
 library(skimr)
+library(here)
+
+
+#Check for raw_data folder
+if (!dir.exists("raw_data")) {
+  dir.create("raw_data")
+}
 
 # setting download path as the raw data folder
-download_path <- "group_01/raw_data/sales_data.csv"
+download_path <- here("raw_data", "sales_data.csv")
 
 # storing dataset url in variable
 dataset_link <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgpIxJreICLSslDONRupncn6mgOC7EoQXprYjsD1Pk5-lE4t7xNFQG2Y14o5iaaWiF1WlrSmVRmaTV/pub?output=csv"
