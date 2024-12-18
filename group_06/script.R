@@ -1,5 +1,6 @@
-
+library(dplyr)
 library(readr)
+library(skimr)
 
 # Define paths for downloading and reading data
 raw_data <- "raw_data"
@@ -20,6 +21,10 @@ Iowa_Economic_Indicators <- read_csv(dataset_path)
 # Make sure data is only object in environment
 rm(list = setdiff(ls(), "Iowa_Economic_Indicators"))
 
-# Print first 5 rows of dataset to make sure script is working
 print(head(Iowa_Economic_Indicators, 5))
 
+print(tail(Iowa_Economic_Indicators, 5))
+
+glimpse(Iowa_Economic_Indicators)
+
+skim(Iowa_Economic_Indicators)
