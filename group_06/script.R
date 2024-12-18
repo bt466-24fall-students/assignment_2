@@ -68,18 +68,18 @@ print(names(Iowa_Economic_Indicators))
 key_columns<-Iowa_Economic_Indicators %>%
   select(
     Month,
-    `Iowa Leading Indicator Index`,
-    `Avg Weekly Manufacturing Hours`,
-    `Residential Building Permits`,
-    `Avg Weekly Unemployment Claims`,
-    `Yield Spread`,
-    `Diesel Fuel Consumption (Gallons)`,
-    `Iowa Stock Market Index`,
-    `Agricultural Futures Profits Index`,
-    `Corn Profits (cents per bushel)`,
-    `Soybean Profits (cents per bushel)`,
-    `Cattle Profits (cents per pound)`,
-    `Hog Profits (cents per pound)`
+    Iowa_Leading_Indicator_Index,
+    Avg_Weekly_Unemployment_Claims,
+    Residential_Building_Permits,
+    Avg_Weekly_Unemployment_Claims,
+    Yield_Spread,
+    `Diesel_Fuel_Consumption_(Gallons)`,
+    Iowa_Stock_Market_Index,
+    Agricultural_Futures_Profits_Index,
+    `Corn_Profits_(cents_per_bushel)`,
+    `Soybean_Profits_(cents_per_bushel)`,
+    `Cattle_Profits_(cents_per_pound)`,
+    `Hog_Profits_(cents_per_pound)`
   )
 
 #Ensure columns are selected    
@@ -88,10 +88,10 @@ print(key_columns)
 #Created a new column, Average_Profits, which is the average of the four profit columns
 key_columns<-key_columns %>%
   mutate(
-    Average_Profits=rowMeans(select(.,`Corn Profits (cents per bushel)`, 
-                                      `Soybean Profits (cents per bushel)`, 
-                                      `Cattle Profits (cents per pound)`, 
-                                      `Hog Profits (cents per pound)`), 
+    Average_Profits=rowMeans(select(.,`Corn_Profits_(cents_per_bushel)`, 
+                                      `Soybean_Profits_(cents_per_bushel)`, 
+                                      `Cattle_Profits_(cents_per_pound)`, 
+                                      `Hog_Profits_(cents_per_pound)`), 
     )
   )
 
@@ -105,7 +105,7 @@ missing_data<-key_columns %>%
 #Print missing values
 print(missing_data)
 
-#Save copy of key_columns
+#Saved copy of key_columns
 save<-file.path("raw_data","Revised_Iowa_Economic_Indicators.csv")
 write.csv(key_columns,save)
 cat("Copy was saved at",save)
@@ -116,16 +116,16 @@ cat("Copy was saved at",save)
 #I dplyr::filtered out missing data but no action was needed as there were none.
 
 #Find Mean, Median, and Standard Deviation for each column
-summary_stat <- key_columns %>%
+summary_stat<-key_columns %>%
   summarize(
     across(
       where(is.numeric), 
       list(
-        Mean = mean,
-        Median = median,
-        SD = sd
-      ),
-    ),
+        Mean=~mean(.),
+        Median=~median(.),
+        SD=~sd(.)
+      )
+    )
   )
 
 glimpse(summary_stat)
@@ -138,28 +138,28 @@ glimpse(summary_stat)
 #Stock Market and Agricultural Futures: High SD, suggests that investors have had varied opinions on the economy of Iowa during the length of the report
 
 #The following sections all create different histograms 
-ggplot(key_columns,aes(x=`Iowa Leading Indicator Index`))+
+ggplot(key_columns,aes(x=Iowa_Leading_Indicator_Index))+
   geom_histogram(binwidth=1)+
   labs(title="Histogram of Iowa Leading Indicator Index", y="Frequency")
 
-ggplot(key_columns,aes(x=`# of Residential Building Permits`))+
+ggplot(key_columns,aes(x=Residential_Building_Permits))+
   geom_histogram(binwidth=50)+
   labs(title="Histogram of Residential Building Permits",y="Frequency")
 
-ggplot(key_columns,aes(x=`Iowa Stock Market Index`))+
+ggplot(key_columns,aes(x=Iowa_Stock_Market_Index))+
   geom_histogram(binwidth=10)+
   labs(title="Histogram of Iowa Stock Market Index",y="Frequency")
 
 #The following sections all create different scatter plots
-ggplot(key_columns,aes(x=`Average_Profits`,y=`Iowa Leading Indicator Index`))+
+ggplot(key_columns,aes(x=Average_Profits,y=Iowa_Leading_Indicator_Index))+
   geom_point()+
   labs(title="Scatter plot of Average Profits vs Iowa Leading Indicator Index")
 
-ggplot(key_columns,aes(x=`Corn Profits(cents per bushel)`,y=`Soybean Profits(cents per bushel)`))+
+ggplot(key_columns,aes(x=`Corn_Profits_(cents_per_bushel)`,y=`Soybean_Profits_(cents_per_bushel)`))+
   geom_point()+
   labs(title="Scatter plot of Corn Profits vs Soybean Profits")
 
-ggplot(key_columns,aes(`x=Avg Weekly Unemployment Claims,y=Residential Building Permits`))+
+ggplot(key_columns,aes(x=Avg_Weekly_Unemployment_Claims,y=Residential_Building_Permits))+
   geom_point()+
   labs(title="Scatter plot of Avg Weekly Unenmployment Claims vs Residential Building Permits")
 
