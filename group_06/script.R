@@ -1,6 +1,8 @@
 library(dplyr)
 library(readr)
 library(skimr)
+library(ggplot2)
+library(tidyverse)
 
 # Define paths for downloading and reading data
 raw_data <- "raw_data"
@@ -44,6 +46,7 @@ skim(Iowa_Economic_Indicators)
 #Non-Farm Employment Coincident Index stays similar throughout data set
 #Agricultural Futures Profits Index has a negative mean
 
+#Add units to agricultural profits
 Iowa_Economic_Indicators <- Iowa_Economic_Indicators %>%
   rename(
     `Corn Profits (cents per bushel)`=`Corn Profits`,
@@ -54,6 +57,12 @@ Iowa_Economic_Indicators <- Iowa_Economic_Indicators %>%
 
 #Make sure changes went through
 skim(Iowa_Economic_Indicators)
+
+#Replace problematic spaces with underscores
+names(Iowa_Economic_Indicators) <- gsub(" ", "_", names(Iowa_Economic_Indicators))
+
+#Make sure column names were fixed
+print(names(Iowa_Economic_Indicators))
 
 #Select key columns
 key_columns<-Iowa_Economic_Indicators %>%
@@ -89,9 +98,9 @@ key_columns<-key_columns %>%
 #Ensure new row was created
 print(key_columns$Average_Profits)
 
-#Filter for missing data
+#dplyr::filter for missing data
 missing_data<-key_columns %>%
-  filter(if_any(everything(),is.na))
+  dplyr::filter(if_any(everything(),is.na))
 
 #Print missing values
 print(missing_data)
@@ -104,4 +113,55 @@ cat("Copy was saved at",save)
 #I added units to the agricultural profits so that they could be better understood.
 #I selected 12 key columns based on their usefulness, the rest were excluded because they either weren't useful or weren't easily understood.
 #I created a new column, Average_Profits, which is the average of the four profit columns. My intent was to create a column which better reflected how industry profits were changing.
-#I filtered out missing data but no action was needed as there were none.
+#I dplyr::filtered out missing data but no action was needed as there were none.
+
+#Find Mean, Median, and Standard Deviation for each column
+summary_stat <- key_columns %>%
+  summarize(
+    across(
+      where(is.numeric), 
+      list(
+        Mean = mean,
+        Median = median,
+        SD = sd
+      ),
+    ),
+  )
+
+glimpse(summary_stat)
+
+#Corn and Soybean Profits: Large difference between mean and median, suggests significant outliers
+#Hog and Cattle profits: Normal means and medians suggesting crops are more volatile than animals
+#Residential Building Permits: High standard deviation indicates that this variable is volatile, likely due to the effect economic recessions has on the construction industry
+#Avg Weekly Unemployment: Similar to residential building, high SD likely caused by the effect economic recessions has on unemployment claims
+#Diesel Consumption: High SD, likely due to two factors: the price of oil, and seasonal driving habits (Americans drive less in the winter)
+#Stock Market and Agricultural Futures: High SD, suggests that investors have had varied opinions on the economy of Iowa during the length of the report
+
+#The following sections all create different histograms 
+ggplot(key_columns,aes(x=`Iowa Leading Indicator Index`))+
+  geom_histogram(binwidth=1)+
+  labs(title="Histogram of Iowa Leading Indicator Index", y="Frequency")
+
+ggplot(key_columns,aes(x=`# of Residential Building Permits`))+
+  geom_histogram(binwidth=50)+
+  labs(title="Histogram of Residential Building Permits",y="Frequency")
+
+ggplot(key_columns,aes(x=`Iowa Stock Market Index`))+
+  geom_histogram(binwidth=10)+
+  labs(title="Histogram of Iowa Stock Market Index",y="Frequency")
+
+#The following sections all create different scatter plots
+ggplot(key_columns,aes(x=`Average_Profits`,y=`Iowa Leading Indicator Index`))+
+  geom_point()+
+  labs(title="Scatter plot of Average Profits vs Iowa Leading Indicator Index")
+
+ggplot(key_columns,aes(x=`Corn Profits(cents per bushel)`,y=`Soybean Profits(cents per bushel)`))+
+  geom_point()+
+  labs(title="Scatter plot of Corn Profits vs Soybean Profits")
+
+ggplot(key_columns,aes(`x=Avg Weekly Unemployment Claims,y=Residential Building Permits`))+
+  geom_point()+
+  labs(title="Scatter plot of Avg Weekly Unenmployment Claims vs Residential Building Permits")
+
+
+
